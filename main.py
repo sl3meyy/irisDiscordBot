@@ -1,5 +1,7 @@
 import os
 import json
+
+import discord
 from discord import Intents, Client, Message, Role
 
 # Lese den Token aus der Datei
@@ -11,8 +13,8 @@ with open("iris.json", "r") as f:
     config = json.load(f)
 
 # Extrahiere die Konfigurationsdaten
-orga_kasse = config.get("orgaKasse", 100)
-team_members = config.get("teamMembers", [])
+orga_kasse = config.get("orgaKasse")
+team_members = config.get("teamMembers")
 
 # Erstelle den Discord-Client
 intents = Intents.default()
@@ -20,7 +22,7 @@ intents.message_content = True
 client = Client(intents=intents)
 
 # Definiere die ID des Channels
-channel_id = 123456789012345678  # Hier die tatsächliche Channel-ID eintragen
+channel_id = 1238985131448864861
 
 # Antwortnachricht für /test
 response_message_test = "Everything is fine"
@@ -30,14 +32,19 @@ response_message_clear = "Channel cleared!"
 response_message_balance = f"OrgaKasse: {orga_kasse}"
 
 # Rollen IDs
-role_ids = [123456789012345678,  # Hier die tatsächlichen Rollen-IDs eintragen
-            234567890123456789,
-            345678901234567890]
+role_ids = [
+    config.get("devRole_id"),
+    config.get("role1_id"),
+    config.get("role2_id"),
+    config.get("role3_id")
+]
 
 # Mapping von Befehlen zu erlaubten Rollen
 command_roles = {
     '/clear': [role_ids[0]],
-    '/balance': role_ids
+    '/balance': role_ids,
+    '/test': [role_ids[1]],
+    '/commands': [role_ids[0]]
 }
 
 # Event für den Bot-Start
@@ -50,25 +57,45 @@ async def on_ready():
 async def on_message(message: Message):
     # Überprüfe, ob die Nachricht im gewünschten Channel ist
     if message.channel.id == channel_id:
-        if message.content.startswith('/test'):
-            await message.channel.send(response_message_test)
-        elif message.content.startswith('/clear'):
-            await clear_channel(message.channel, message.author.roles)
-        elif message.content.startswith('/balance'):
-            await message.channel.send(response_message_balance)
+        for command, allowed_roles in command_roles.items():
+            if message.content.startswith(command):
+                await execute_command(message, command, allowed_roles)
+                break
     # Überprüfe, ob die Nachricht eine private Nachricht an den Bot ist
     elif isinstance(message.channel, discord.DMChannel):
-        if message.content.startswith('/test'):
-            await message.author.send(response_message_test)
+        for command, allowed_roles in command_roles.items():
+            if message.content.startswith(command):
+                await execute_command(message, command, allowed_roles)
+                break
+
+# Funktion zum Ausführen des Befehls
+async def execute_command(message, command, allowed_roles):
+    member_roles = [role.id for role in message.author.roles]
+    for role_id in member_roles:
+        if role_id in allowed_roles:
+            if command == '/clear':
+                await clear_channel(message.channel)
+            elif command == '/balance':
+                await message.channel.send(response_message_balance)
+            elif command == '/test':
+                await message.channel.send(response_message_test)
+            elif command == '/commands':
+                await display_commands(message)
+            return
+    await message.channel.send("You do not have permission to execute this command.")
 
 # Funktion zum Löschen des Channels
-async def clear_channel(channel, user_roles):
-    allowed_roles = command_roles['/clear']
-    if any(role.id in allowed_roles for role in user_roles):
-        await channel.purge()
-        await channel.send(response_message_clear)
-    else:
-        await channel.send("You do not have permission to execute this command.")
+async def clear_channel(channel):
+    await channel.purge()
+    await channel.send(response_message_clear)
+
+# Funktion zum Anzeigen der Befehle und den zugehörigen Rollen
+async def display_commands(message):
+    commands_list = ""
+    for command, allowed_roles in command_roles.items():
+        roles = [role.name for role in message.guild.roles if role.id in allowed_roles]
+        commands_list += f"{command} - Allowed roles: {', '.join(roles)}\n"
+    await message.channel.send(commands_list)
 
 # Main-Funktion
 def main():
