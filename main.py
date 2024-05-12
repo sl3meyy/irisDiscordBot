@@ -3,7 +3,7 @@ import json
 
 import discord
 from discord import Intents, Client, Message, Role
-
+t
 # Lese den Token aus der Datei
 with open("token.txt", "r") as f:
     token = f.read().strip()
