@@ -1,11 +1,9 @@
 from typing import Final
 import os
-
 from discord.app_commands import commands
-from dotenv import load_dotenv
 from discord import Intents, Client, Message
 from random import choice, randint
-
+from functions import *
 f = open("token.txt", "r")
 token = f.read().replace("BOT_TOKEN=", "")
 #print(token)
@@ -50,15 +48,6 @@ async def on_message(message: Message) -> None:
     print(f'[{channel}] {username}: ' +user_message)
     await send_message(message, user_message)
 
-def get_response(user_input: str) -> str:
-    lowered: str = user_input.lower()
-
-    if lowered == '':
-        return 'Well, you\'re awfully silent'
-    elif 'hello' in lowered:
-        return 'Hello there'
-    else:
-        return choice["I don't understand are you sure you got the right command there buddy?", "What are you talking about ? ", "Sorry i didn't understand that"]
 
 #main entry point
 
