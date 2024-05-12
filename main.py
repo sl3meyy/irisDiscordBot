@@ -39,6 +39,13 @@ role_ids = [
     config.get("role3_id")
 ]
 
+allCommands = [
+    "Command: /clear -> clears all messages in current channel",
+    "Command: /balance -> shows balance of orga",
+    "Command: /test -> tests all Systems",
+    "Command: /commands -> shows commands"
+]
+
 # Mapping von Befehlen zu erlaubten Rollen
 command_roles = {
     '/clear': [role_ids[0]],
@@ -80,7 +87,8 @@ async def execute_command(message, command, allowed_roles):
             elif command == '/test':
                 await message.channel.send(response_message_test)
             elif command == '/commands':
-                await display_commands(message)
+                for i in allCommands:
+                    await message.channel.send(i)
             return
     await message.channel.send("You do not have permission to execute this command.")
 
