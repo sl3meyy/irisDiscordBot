@@ -1,28 +1,73 @@
-import discord
-from discord.ext import commands
+from typing import Final
+import os
 
-# Erstelle einen Bot-Client mit Intents
-intents = discord.Intents.default()
-intents.messages = True  # Aktiviere die Nachrichten-Intent
-intents.guilds = True    # Aktiviere die Server-Intent
-bot = commands.Bot(command_prefix='!', intents=intents)
+from discord.app_commands import commands
+from dotenv import load_dotenv
+from discord import Intents, Client, Message
+from random import choice, randint
 
-# Event, das ausgelöst wird, wenn der Bot gestartet ist
-@bot.event
-async def on_ready():
-    print('Bot ist bereit!')
-
-# Event, das ausgelöst wird, wenn eine Nachricht im Discord-Server gesendet wird
-@bot.event
-async def on_message(message):
-    # Ignoriere Nachrichten des Bots selbst
-    if message.author == bot.user:
-        return
-
-    # Wenn die Nachricht '!ping' enthält, antworte mit 'Pong!'
-    if message.content.startswith('!ping'):
-        await message.channel.send('Pong!')
 f = open("token.txt", "r")
 token = f.read().replace("BOT_TOKEN=", "")
-# Token des Bots - Stelle sicher, dass du deinen eigenen Token hier einfügst
-bot.run(token)
+#print(token)
+
+#Setting up Bot
+
+intents: Intents = Intents.default()
+intents.message_content = True # NOQA
+client: Client = Client(intents=intents)
+bot = commands.Bot(command_prefix='$', intents=intents)
+#Message functions
+
+async def send_message(message: Message, user_message: str) -> None:
+    if not user_message:
+        print('Messages was empty because intents were not enabled probably')
+        return
+
+    if is_private := user_message[0] == '?':
+        user_message = user_message[1:]
+
+    try:
+        response: str = get_response(user_message)
+        await message.author.send(response) if is_private else await message.channel.send(response)
+    except Exception as e:
+        print(e)
+
+#Startup
+@client.event
+async def on_ready() -> None:
+    print(f'{client.user} is now running!')
+
+#Handle incomming messages
+
+@client.event
+async def on_message(message: Message) -> None:
+    if message.author == client.user:
+        return
+
+    username: str = str(message.author)
+    user_message: str = str(message.content)
+    channel: str = str(message.channel)
+    print(f'[{channel}] {username}: ' +user_message)
+    await send_message(message, user_message)
+
+def get_response(user_input: str) -> str:
+    lowered: str = user_input.lower()
+
+    if lowered == '':
+        return 'Well, you\'re awfully silent'
+    elif 'hello' in lowered:
+        return 'Hello there'
+    else:
+        return choice["I don't understand are you sure you got the right command there buddy?", "What are you talking about ? ", "Sorry i didn't understand that"]
+
+#main entry point
+
+def main() -> None:
+    client.run(token=token)
+
+if __name__ == '__main__':
+    main()
+
+
+
+
