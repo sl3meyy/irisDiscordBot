@@ -1,8 +1,11 @@
 import os
 import json
+import sys
 
 import discord
 from discord import Intents, Client, Message, Role
+
+import updateScript
 
 # Lese den Token aus der Datei
 with open("token.txt", "r") as f:
@@ -44,6 +47,7 @@ allCommands = [
     "Command: /balance -> shows balance of orga",
     "Command: /test -> tests all Systems",
     "Command: /commands -> shows commands"
+    "Command: /update -> Updates bot"
 ]
 
 # Mapping von Befehlen zu erlaubten Rollen
@@ -51,7 +55,8 @@ command_roles = {
     '/clear': [role_ids[0]],
     '/balance': role_ids,
     '/test': [role_ids[1]],
-    '/commands': [role_ids[0]]
+    '/commands': [role_ids[0]],
+    '/update': [role_ids[0]]
 }
 
 # Event für den Bot-Start
@@ -89,6 +94,9 @@ async def execute_command(message, command, allowed_roles):
             elif command == '/commands':
                 for i in allCommands:
                     await message.channel.send(i)
+            elif command == "/update":
+                await message.channel.send("Updating...")
+                await client.close()
             return
     await message.channel.send("You do not have permission to execute this command.")
 
@@ -106,8 +114,6 @@ async def display_commands(message):
     await message.channel.send(commands_list)
 
 # Main-Funktion
-def main():
-    client.run(token)
-
 if __name__ == '__main__':
-    main()
+
+    client.run(token)
