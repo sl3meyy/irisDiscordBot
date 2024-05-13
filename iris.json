@@ -1,9 +1,10 @@
 {
+  "token": "MTIzODk4MzU5MjYxNzcwNTUzMw.GaIOg-.s1zkDYpm7D1yuOfDLJfKymnbfQv-x4MyCZiFB8",
   "orgaKasse": 100,
   "teamMembers": [],
   "devRole_id": 1239240143877967892,
   "role1_id": 1239236898401030325,
   "role2_id": 1239236929241743401,
   "role3_id": 1239236946019221524,
-  "version": 1.0
+  "version": 0.7
 }

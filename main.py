@@ -1,15 +1,22 @@
 import os
 import json
+import subprocess
 import sys
 
 import discord
 from discord import Intents, Client, Message, Role
 
+import test
 import updateScript
+import updater
+
+#ToDo: /commands command should show different things based on users role (maybe dm?)
+#ToDo: Bug fix, aktuell braucht man die 3er, 2er und 1er rolle wenn man einen 1er command ausführen will.
+#ToDo: implement all commands -> release p-1.0
+
+#ToDo: Verify permissions (send nom nom list)
 
 # Lese den Token aus der Datei
-with open("token.txt", "r") as f:
-    token = f.read().strip()
 
 # Lese die Konfiguration aus der JSON-Datei
 with open("iris.json", "r") as f:
@@ -18,7 +25,7 @@ with open("iris.json", "r") as f:
 # Extrahiere die Konfigurationsdaten
 orga_kasse = config.get("orgaKasse")
 team_members = config.get("teamMembers")
-
+token = config.get("token")
 # Erstelle den Discord-Client
 intents = Intents.default()
 intents.message_content = True
@@ -46,8 +53,9 @@ allCommands = [
     "Command: /clear -> clears all messages in current channel",
     "Command: /balance -> shows balance of orga",
     "Command: /test -> tests all Systems",
-    "Command: /commands -> shows commands"
-    "Command: /update -> Updates bot"
+    "Command: /commands -> shows commands",
+    "Command: /update -> Updates bot",
+    "Command: /version -> Shows version",
 ]
 
 # Mapping von Befehlen zu erlaubten Rollen
@@ -56,7 +64,8 @@ command_roles = {
     '/balance': role_ids,
     '/test': [role_ids[1]],
     '/commands': [role_ids[0]],
-    '/update': [role_ids[0]]
+    '/update': [role_ids[0]],
+    '/version': [role_ids[0]]
 }
 
 # Event für den Bot-Start
@@ -96,7 +105,13 @@ async def execute_command(message, command, allowed_roles):
                     await message.channel.send(i)
             elif command == "/update":
                 await message.channel.send("Updating...")
+                update()
                 await client.close()
+            elif command == "/version":
+                version = config.get("version")
+                await message.channel.send(f"Bot is on Version: {version}")
+            elif command == "/tes2":
+                await message.channel.send("tset 2 successful")
             return
     await message.channel.send("You do not have permission to execute this command.")
 
@@ -112,8 +127,10 @@ async def display_commands(message):
         roles = [role.name for role in message.guild.roles if role.id in allowed_roles]
         commands_list += f"{command} - Allowed roles: {', '.join(roles)}\n"
     await message.channel.send(commands_list)
+def update():
+    updater.run()
 
 # Main-Funktion
 if __name__ == '__main__':
-
+    client.change_presence(status=discord.Status.do_not_disturb)
     client.run(token)
