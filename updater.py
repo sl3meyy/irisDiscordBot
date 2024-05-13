@@ -3,6 +3,8 @@ import requests
 import os
 
 #ToDo: implement it fully (look up for bugs and complete it, done for today)
+#ToDo: download all files except sourcecode.zip and so from repository and replace all of them on local install !IMPORTANT!
+
 def get_current_version():
     with open("iris.json", "r") as f:
         data = json.load(f)
