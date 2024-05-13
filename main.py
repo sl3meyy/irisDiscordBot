@@ -1,13 +1,8 @@
-import os
 import json
-import subprocess
-import sys
-
+from dotenv import load_dotenv
+import os
 import discord
 from discord import Intents, Client, Message, Role
-
-import test
-import updateScript
 import updater
 
 #ToDo: /commands command should show different things based on users role (maybe dm?)
@@ -25,7 +20,9 @@ with open("iris.json", "r") as f:
 # Extrahiere die Konfigurationsdaten
 orga_kasse = config.get("orgaKasse")
 team_members = config.get("teamMembers")
-token = config.get("token")
+
+load_dotenv()
+token = os.getenv("DISCORD_TOKEN")
 # Erstelle den Discord-Client
 intents = Intents.default()
 intents.message_content = True
