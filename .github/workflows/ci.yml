@@ -20,7 +20,7 @@ jobs:
       - name: Stop Discord Bot
         run: |
           # Beende das Python-Skript, falls es ausgeführt wird
-          taskkill /F /FI "WINDOWTITLE eq main.py - Python" /T
+          Get-Process python | Where-Object {$_.MainWindowTitle -like "*main.py*"} | Stop-Process -Force
 
       - name: Start Discord Bot
         run: |
