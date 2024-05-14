@@ -19,8 +19,8 @@ jobs:
 
       - name: Stop Discord Bot
         run: |
-          # Beende das Python-Skript, falls es ausgeführt wird
-          Get-Process python | Where-Object {$_.MainWindowTitle -like "*main.py*"} | Stop-Process -Force
+          # Beende den Python-Skript-Prozess, der in einer Konsolenanwendung ausgeführt wird
+          taskkill /IM python.exe /F
 
       - name: Start Discord Bot
         run: |
