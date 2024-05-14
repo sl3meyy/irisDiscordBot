@@ -1,0 +1,24 @@
+name: Update Discord Bot
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Restart Discord Bot
+        run: |
+          # Powershell-Befehl zum Stoppen und Starten des Bots
+          Stop-Service discord-bot
+          Start-Service discord-bot
