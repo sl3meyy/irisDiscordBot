@@ -1,0 +1,30 @@
+name: Update Discord Bot
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Stop Discord Bot
+        run: |
+          # Lese die PID aus der Datei
+          $pid = Get-Content bot_pid.txt
+          # Beende den Prozess mit der gespeicherten PID
+          taskkill /F /PID $pid
+
+      - name: Start Discord Bot
+        run: |
+          # Starte das Python-Skript erneut
+          python main.py
