@@ -17,8 +17,10 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Restart Discord Bot
+      - name: Stop Discord Bot
         run: |
-          # Powershell-Befehl zum Stoppen und Starten des Bots
-          Stop-Service discord-bot
-          Start-Service discord-bot
+          taskkill /IM python.exe /F
+
+      - name: Start Discord Bot
+        run: |
+          python main.py
