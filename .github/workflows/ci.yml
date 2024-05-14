@@ -1,4 +1,4 @@
-name: Update Discord Bot
+name: ci
 
 on:
   push:
@@ -6,9 +6,8 @@ on:
       - production
 
 jobs:
-  build:
+  update_bot:
     runs-on: windows-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -16,22 +15,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x' # Du kannst hier deine Python-Version angeben
+          python-version: '3.x'
 
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Stop Discord Bot
-        run: |
-          # Setze das Arbeitsverzeichnis auf den Ordner mit der main.py-Datei
-          cd C:\Users\lukas\Documents\Coding\botTest\irisDiscordBot
-          # Lese die PID aus der Datei im aktuellen Arbeitsverzeichnis
-          $pid = Get-Content bot_pid.txt
-          # Beende den Prozess mit der gespeicherten PID
-          taskkill /F /PID $pid
-
-      - name: Start Discord Bot
-        run: |
-          # Starte das Python-Skript erneut
-          python main.py
+      - name: Restart Bot
+        run: python bot.py
