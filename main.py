@@ -133,3 +133,6 @@ def update():
 if __name__ == '__main__':
     client.change_presence(status=discord.Status.do_not_disturb)
     client.run(token)
+    pid = os.getpid()
+    with open("bot_pid.txt", "w") as f:
+        f.write(str(pid))
