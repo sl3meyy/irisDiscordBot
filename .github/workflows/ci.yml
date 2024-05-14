@@ -19,8 +19,10 @@ jobs:
 
       - name: Stop Discord Bot
         run: |
-          # Beende den Python-Skript-Prozess, der in einer Konsolenanwendung ausgeführt wird
-          taskkill /IM python.exe /F
+          # Lese die PID aus der Datei
+          $pid = Get-Content bot_pid.txt
+          # Beende den Prozess mit der gespeicherten PID
+          taskkill /F /PID $pid
 
       - name: Start Discord Bot
         run: |
