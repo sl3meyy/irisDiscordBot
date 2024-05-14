@@ -8,8 +8,10 @@ import updater
 #ToDo: /commands command should show different things based on users role (maybe dm?)
 #ToDo: Bug fix, aktuell braucht man die 3er, 2er und 1er rolle wenn man einen 1er command ausführen will.
 #ToDo: implement all commands -> release p-1.0
+#ToDo: Rework commands completely
 
-#ToDo: Verify permissions (send nom nom list)
+
+#ToDo: Bug fix (/test or other commands trigger updating)
 
 # Lese den Token aus der Datei
 
@@ -59,8 +61,8 @@ allCommands = [
 command_roles = {
     '/clear': [role_ids[0]],
     '/balance': role_ids,
-    '/test': [role_ids[1]],
-    '/commands': [role_ids[0]],
+    '/test': [role_ids[0]],
+    '/commands': role_ids,
     '/update': [role_ids[0]],
     '/version': [role_ids[0]]
 }
