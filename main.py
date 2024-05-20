@@ -3,17 +3,12 @@ from dotenv import load_dotenv
 import os
 import discord
 from discord import Intents, Client, Message, Role
-import updater
-
-#ToDo: /commands command should show different things based on users role (maybe dm?)
-#ToDo: Bug fix, aktuell braucht man die 3er, 2er und 1er rolle wenn man einen 1er command ausführen will.
-#ToDo: implement all commands -> release p-1.0
-#ToDo: Rework commands completely
-
-
-#ToDo: Bug fix (/test or other commands trigger updating)
+import subprocess
+import requests
 
 # Lese den Token aus der Datei
+load_dotenv()
+token = os.getenv("DISCORD_TOKEN")
 
 # Lese die Konfiguration aus der JSON-Datei
 with open("iris.json", "r") as f:
@@ -23,8 +18,6 @@ with open("iris.json", "r") as f:
 orga_kasse = config.get("orgaKasse")
 team_members = config.get("teamMembers")
 
-load_dotenv()
-token = os.getenv("DISCORD_TOKEN")
 # Erstelle den Discord-Client
 intents = Intents.default()
 intents.message_content = True
@@ -33,11 +26,9 @@ client = Client(intents=intents)
 # Definiere die ID des Channels
 channel_id = 1238985131448864861
 
-# Antwortnachricht für /test
+# Antwortnachrichten
 response_message_test = "Everything is fine"
-# Antwortnachricht für /clear
 response_message_clear = "Channel cleared!"
-# Antwortnachricht für /balance
 response_message_balance = f"OrgaKasse: {orga_kasse}"
 
 # Rollen IDs
@@ -75,14 +66,8 @@ async def on_ready():
 # Event für eingehende Nachrichten
 @client.event
 async def on_message(message: Message):
-    # Überprüfe, ob die Nachricht im gewünschten Channel ist
-    if message.channel.id == channel_id:
-        for command, allowed_roles in command_roles.items():
-            if message.content.startswith(command):
-                await execute_command(message, command, allowed_roles)
-                break
-    # Überprüfe, ob die Nachricht eine private Nachricht an den Bot ist
-    elif isinstance(message.channel, discord.DMChannel):
+    # Überprüfe, ob die Nachricht im gewünschten Channel oder eine DM ist
+    if message.channel.id == channel_id or isinstance(message.channel, discord.DMChannel):
         for command, allowed_roles in command_roles.items():
             if message.content.startswith(command):
                 await execute_command(message, command, allowed_roles)
@@ -105,13 +90,11 @@ async def execute_command(message, command, allowed_roles):
             elif command == "/update":
                 await message.channel.send("Updating...")
                 update()
-                await client.close()
+                await client.close()  # Bot nach dem Update beenden
             elif command == "/version":
                 version = config.get("version")
                 await message.channel.send(f"Bot is on Version: {version}")
-            elif command == "/tes2":
-                await message.channel.send("tset 2 successful")
-            return
+            return  # Befehl wurde ausgeführt, Schleife verlassen
     await message.channel.send("You do not have permission to execute this command.")
 
 # Funktion zum Löschen des Channels
@@ -119,20 +102,43 @@ async def clear_channel(channel):
     await channel.purge()
     await channel.send(response_message_clear)
 
-# Funktion zum Anzeigen der Befehle und den zugehörigen Rollen
-async def display_commands(message):
-    commands_list = ""
-    for command, allowed_roles in command_roles.items():
-        roles = [role.name for role in message.guild.roles if role.id in allowed_roles]
-        commands_list += f"{command} - Allowed roles: {', '.join(roles)}\n"
-    await message.channel.send(commands_list)
+# Funktion zum Aktualisieren des Bots
 def update():
-    updater.run()
+    repo_owner = "sl3meyy"
+    repo_name = "irisDiscordBot"
+
+    # Hole das neueste Release von GitHub
+    releases_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
+    response = requests.get(releases_url)
+
+    if response.status_code == 200:
+        release_data = response.json()
+        tag_name = release_data["tag_name"]
+        assets = release_data.get("assets", [])  # Sichere Methode, um Assets abzurufen
+
+        if assets:  # Überprüfen, ob Assets vorhanden sind
+            asset_url = assets[0]["browser_download_url"]
+
+            # Stoppe den aktuellen Bot-Prozess
+            client.close()  # Korrigiert: Asynchrone Funktion await client.close() verwenden
+
+            # Downloade das neueste Release
+            subprocess.run(["curl", "-L", asset_url, "-o", "irisDiscordBot.zip"])
+
+            # Entpacke das Release
+            subprocess.run(["tar", "-xf", "irisDiscordBot.zip"])
+
+            # Starte den Bot neu
+            subprocess.Popen(["python", "irisDiscordBot/main.py"])
+
+        else:
+            print(f"Keine Assets im Release {tag_name} gefunden.")
+
+    else:
+        print(f"Fehler beim Abrufen des neuesten Releases: {response.status_code}")
+
 
 # Main-Funktion
 if __name__ == '__main__':
-    client.change_presence(status=discord.Status.do_not_disturb)
+    client.change_presence(status="dnd")
     client.run(token)
-    pid = os.getpid()
-    with open("bot_pid.txt", "w") as f:
-        f.write(str(pid))
